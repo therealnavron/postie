@@ -18,6 +18,7 @@ import {
   Users,
   CheckCircle2,
   Zap,
+  Building2,
 } from "lucide-react";
 import { SiInstagram, SiTiktok, SiX } from "react-icons/si";
 
@@ -31,6 +32,12 @@ export default function Landing() {
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <PostieLogoFull />
           <div className="flex items-center gap-2">
+            <Link href="/brand/login">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" data-testid="btn-brand-login">
+                <Building2 className="h-3.5 w-3.5" />
+                Brand Login
+              </Button>
+            </Link>
             <Button variant="ghost" size="icon" onClick={toggle} className="h-8 w-8" data-testid="theme-toggle">
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
@@ -88,7 +95,7 @@ export default function Landing() {
           {[
             { label: "Active Creators", value: "1,200+", icon: Users },
             { label: "Campaigns Run", value: "340", icon: Calendar },
-            { label: "Avg CPM", value: "£5.75", icon: TrendingUp },
+            { label: "Avg CPM", value: "£0.55", icon: TrendingUp },
             { label: "Total Paid Out", value: "£180k+", icon: DollarSign },
           ].map((stat) => (
             <div key={stat.label} className="flex flex-col items-center gap-1">

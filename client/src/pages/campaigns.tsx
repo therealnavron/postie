@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppState } from "@/lib/app-state";
-import { availableCampaigns, activeCampaigns } from "@/lib/mock-data";
+import { availableCampaigns, activeCampaigns, connectedAccount } from "@/lib/mock-data";
 import type { Campaign, ActiveCampaign, Platform, PostType, MediaType } from "@/lib/mock-data";
 import {
   Copy,
@@ -59,6 +59,10 @@ function CampaignCard({ campaign, isJoined, onJoin }: { campaign: Campaign; isJo
   const MediaIcon = mediaIcons[campaign.media.type];
   const status = statusConfig[campaign.status] || statusConfig.open;
   const spotsLeft = campaign.spots_total - campaign.spots_filled;
+
+  // Estimated earnings based on user's average recent views
+  const estEarnings = (connectedAccount.avg_recent_views / 1000) * campaign.cpm_rate;
+  const estEarningsBio = (connectedAccount.avg_recent_views / 1000) * campaign.bio_bonus_cpm_rate;
 
   const handleJoin = () => {
     setJoining(true);
@@ -155,8 +159,18 @@ function CampaignCard({ campaign, isJoined, onJoin }: { campaign: Campaign; isJo
               </div>
             </div>
 
+            {/* Estimated earnings highlight */}
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/15 mb-3">
+              <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Est. £{estEarnings.toFixed(2)}/post</p>
+                <p className="text-[10px] text-muted-foreground">Based on your ~{connectedAccount.avg_recent_views.toLocaleString()} avg views · £{campaign.cpm_rate.toFixed(2)} CPM{campaign.bio_bonus_cpm_rate > campaign.cpm_rate ? ` · Bio bonus: £${estEarningsBio.toFixed(2)}` : ""}</p>
+              </div>
+            </div>
+
             {/* Details row */}
             <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground mb-3">
+              <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{connectedAccount.avg_recent_views.toLocaleString()} avg views</span>
               <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />£{campaign.cpm_rate.toFixed(2)} CPM</span>
               <span className="text-primary font-medium">Bio: £{campaign.bio_bonus_cpm_rate.toFixed(2)}</span>
               <span className="flex items-center gap-1"><CalIcon className="h-3 w-3" />{new Date(campaign.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – {new Date(campaign.end_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
@@ -173,7 +187,7 @@ function CampaignCard({ campaign, isJoined, onJoin }: { campaign: Campaign; isJo
               {!isJoined ? (
                 <Button size="sm" className="gap-1.5 h-8" onClick={handleJoin} disabled={joining} data-testid={`join-${campaign.id}`}>
                   {joining ? <Loader2 className="h-3 w-3 animate-spin" /> : <ArrowRight className="h-3 w-3" />}
-                  {joining ? "Joining..." : "Sign Up"}
+                  {joining ? "Joining..." : "Join Campaign"}
                 </Button>
               ) : (
                 <Badge variant="secondary" className="gap-1 px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">

@@ -16,9 +16,7 @@ export type MediaType = "image" | "video" | "slideshow";
 
 export interface CampaignMedia {
   type: MediaType;
-  /** Number of slides if slideshow */
   count?: number;
-  /** Human-readable description of what will be posted */
   description: string;
 }
 
@@ -35,6 +33,8 @@ export interface SocialAccount {
   bio: string;
   verified: boolean;
   demographics: Demographics;
+  /** Average views on recent posts — used for earnings estimates */
+  avg_recent_views: number;
 }
 
 export interface Demographics {
@@ -51,11 +51,8 @@ export interface Campaign {
   brand_color: string;
   title: string;
   description: string;
-  /** What kind of post the brand is making on the creator's account */
   post_type: PostType;
-  /** Where it's posting — platform + placement */
   posting_to: { platform: Platform; placement: string };
-  /** Media that will be posted */
   media: CampaignMedia;
   caption: string;
   hashtags: string[];
@@ -65,9 +62,7 @@ export interface Campaign {
   end_date: string;
   status: "open" | "active" | "upcoming" | "completed";
   category: string;
-  /** Auto-post: we post on the creator's behalf */
   auto_post: boolean;
-  /** How many days the post must stay up */
   keep_days: number;
   spots_total: number;
   spots_filled: number;
@@ -77,7 +72,6 @@ export interface Campaign {
 export interface ActiveCampaign extends Campaign {
   user_status: "joined" | "posted" | "scheduled" | "auto_posted";
   scheduled_date?: string;
-  /** When the post was published — used to calculate keep-until */
   posted_date?: string;
   views?: number;
   earned?: number;
@@ -118,6 +112,65 @@ export interface DashboardStats {
   bio_bonus_active: boolean;
 }
 
+// ── Brand-side types ─────────────────────────────────────────
+
+export type BrandCategory =
+  | "ecommerce"
+  | "food"
+  | "gambling"
+  | "tech"
+  | "fashion"
+  | "beauty"
+  | "fitness"
+  | "travel"
+  | "finance"
+  | "entertainment"
+  | "other";
+
+export const brandCategories: { value: BrandCategory; label: string }[] = [
+  { value: "ecommerce", label: "E-Commerce" },
+  { value: "food", label: "Food & Drink" },
+  { value: "gambling", label: "Gambling" },
+  { value: "tech", label: "Technology" },
+  { value: "fashion", label: "Fashion" },
+  { value: "beauty", label: "Beauty" },
+  { value: "fitness", label: "Fitness" },
+  { value: "travel", label: "Travel" },
+  { value: "finance", label: "Finance" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "other", label: "Other" },
+];
+
+export type CampaignStyle = "brand_growth" | "viral_content";
+
+export interface BrandAccount {
+  id: string;
+  brand_name: string;
+  brand_initials: string;
+  brand_color: string;
+  category: BrandCategory;
+  contact_name: string;
+  work_email: string;
+  balance: number;
+}
+
+export interface BrandCampaign {
+  id: string;
+  title: string;
+  style: CampaignStyle;
+  status: "active" | "scheduled" | "completed" | "draft";
+  content_type: PostType;
+  budget: number;
+  spent: number;
+  total_views: number;
+  total_unique_accounts: number;
+  total_unique_posts: number;
+  cpm_rate: number;
+  start_date: string;
+  end_date: string;
+  demographics: Demographics;
+}
+
 // ── Connected account ────────────────────────────────────────
 
 export const connectedAccount: SocialAccount = {
@@ -132,6 +185,7 @@ export const connectedAccount: SocialAccount = {
   account_type: "Creator",
   bio: "Creator & Entrepreneur | London 🇬🇧",
   verified: false,
+  avg_recent_views: 8200,
   demographics: {
     age_groups: [
       { label: "13-17", pct: 3 },
@@ -163,7 +217,7 @@ export const connectedAccount: SocialAccount = {
   },
 };
 
-// ── Available campaigns (for discovery) ──────────────────────
+// ── Available campaigns (for discovery) — CPMs now $0.20–$1.00 ──
 
 export const availableCampaigns: Campaign[] = [
   {
@@ -175,7 +229,7 @@ export const availableCampaigns: Campaign[] = [
     media: { type: "video", description: "15-second lifestyle Reel featuring GlowSkin serum in morning routine" },
     caption: "My skin has been glowing since I found @GlowSkin ✨ Use code POSTIE20 for 20% off",
     hashtags: ["#ad", "#GlowSkin", "#SkincareRoutine", "#VitaminC"],
-    cpm_rate: 5.0, bio_bonus_cpm_rate: 5.25,
+    cpm_rate: 0.65, bio_bonus_cpm_rate: 0.68,
     start_date: "2026-03-25", end_date: "2026-04-15", status: "open",
     category: "Beauty", auto_post: true, keep_days: 14,
     spots_total: 50, spots_filled: 32, match_score: 92,
@@ -189,7 +243,7 @@ export const availableCampaigns: Campaign[] = [
     media: { type: "slideshow", count: 4, description: "4 lifestyle images: gym bag flat-lay, mid-workout shot, close-up product, post-gym selfie" },
     caption: "Fuelling my workouts with @FitFuel 💪 New flavours just dropped!",
     hashtags: ["#ad", "#FitFuel", "#ProteinBar", "#FitnessLifestyle"],
-    cpm_rate: 4.5, bio_bonus_cpm_rate: 4.73,
+    cpm_rate: 0.45, bio_bonus_cpm_rate: 0.47,
     start_date: "2026-03-28", end_date: "2026-04-20", status: "open",
     category: "Fitness", auto_post: true, keep_days: 30,
     spots_total: 80, spots_filled: 41, match_score: 78,
@@ -203,7 +257,7 @@ export const availableCampaigns: Campaign[] = [
     media: { type: "image", description: "High-quality lifestyle photo wearing TechNova X1 watch" },
     caption: "Been wearing the @TechNova X1 all week — the fitness tracking is insane 🔥",
     hashtags: ["#ad", "#TechNova", "#SmartWatch", "#FitnessTech"],
-    cpm_rate: 6.0, bio_bonus_cpm_rate: 6.3,
+    cpm_rate: 0.80, bio_bonus_cpm_rate: 0.84,
     start_date: "2026-04-01", end_date: "2026-04-30", status: "upcoming",
     category: "Tech", auto_post: true, keep_days: 21,
     spots_total: 30, spots_filled: 12, match_score: 85,
@@ -217,7 +271,7 @@ export const availableCampaigns: Campaign[] = [
     media: { type: "video", description: "20-second morning routine Reel — coffee preparation, first sip moment" },
     caption: "My mornings start with @NomadCoffee ☕️ The single-origin blend hits different",
     hashtags: ["#ad", "#NomadCoffee", "#MorningRoutine", "#CoffeeLover"],
-    cpm_rate: 4.0, bio_bonus_cpm_rate: 4.2,
+    cpm_rate: 0.40, bio_bonus_cpm_rate: 0.42,
     start_date: "2026-04-05", end_date: "2026-05-05", status: "open",
     category: "Food & Drink", auto_post: true, keep_days: 7,
     spots_total: 100, spots_filled: 67, match_score: 88,
@@ -231,7 +285,7 @@ export const availableCampaigns: Campaign[] = [
     media: { type: "slideshow", count: 5, description: "5 scenic UK destination images with text overlays" },
     caption: "My top 5 UK weekend escapes 🏡✨ Book through @LuxeTravel for the best deals",
     hashtags: ["#ad", "#LuxeTravel", "#UKGetaway", "#WeekendTrip"],
-    cpm_rate: 7.5, bio_bonus_cpm_rate: 7.88,
+    cpm_rate: 1.00, bio_bonus_cpm_rate: 1.05,
     start_date: "2026-04-10", end_date: "2026-05-10", status: "upcoming",
     category: "Travel", auto_post: true, keep_days: 30,
     spots_total: 25, spots_filled: 8, match_score: 72,
@@ -245,7 +299,7 @@ export const availableCampaigns: Campaign[] = [
     media: { type: "video", description: "30-second product review video — unboxing, testing, reaction" },
     caption: "These earbuds are a game changer 🎧 @PulseAudio Pro - link in bio",
     hashtags: ["#ad", "#PulseAudio", "#Earbuds", "#TechReview"],
-    cpm_rate: 5.5, bio_bonus_cpm_rate: 5.78,
+    cpm_rate: 0.55, bio_bonus_cpm_rate: 0.58,
     start_date: "2026-03-30", end_date: "2026-04-30", status: "open",
     category: "Tech", auto_post: true, keep_days: 14,
     spots_total: 40, spots_filled: 22, match_score: 80,
@@ -259,7 +313,7 @@ export const availableCampaigns: Campaign[] = [
     media: { type: "slideshow", count: 3, description: "3-tweet thread with styled outfit images per tweet" },
     caption: "Spring wardrobe refresh with @StyleVault 🌸 Here are my top picks from their new collection",
     hashtags: ["#ad", "#StyleVault", "#SpringFashion"],
-    cpm_rate: 3.5, bio_bonus_cpm_rate: 3.68,
+    cpm_rate: 0.35, bio_bonus_cpm_rate: 0.37,
     start_date: "2026-04-01", end_date: "2026-04-30", status: "open",
     category: "Fashion", auto_post: true, keep_days: 21,
     spots_total: 60, spots_filled: 28, match_score: 65,
@@ -273,18 +327,18 @@ export const availableCampaigns: Campaign[] = [
     media: { type: "video", description: "15-second Story — candle-lit room, diffuser mist, relaxation vibes" },
     caption: "Sunday self-care with @ZenSpa 🧘‍♀️ Their new diffuser is everything",
     hashtags: ["#ad", "#ZenSpa", "#SelfCare", "#SundayVibes"],
-    cpm_rate: 3.0, bio_bonus_cpm_rate: 3.15,
+    cpm_rate: 0.20, bio_bonus_cpm_rate: 0.21,
     start_date: "2026-03-30", end_date: "2026-04-15", status: "open",
     category: "Wellness", auto_post: true, keep_days: 1,
     spots_total: 120, spots_filled: 54, match_score: 74,
   },
 ];
 
-// ── User's active campaigns (already joined) ─────────────────
+// ── User's active campaigns ──────────────────────────────────
 
 export const activeCampaigns: ActiveCampaign[] = [
   {
-    ...availableCampaigns[0], // GlowSkin
+    ...availableCampaigns[0],
     status: "active",
     user_status: "scheduled",
     scheduled_date: "2026-03-27T10:00:00Z",
@@ -298,12 +352,12 @@ export const activeCampaigns: ActiveCampaign[] = [
     media: { type: "video", description: "30-second explainer on VPN benefits when travelling" },
     caption: "I protect my data with @CloudVPN — especially when travelling ✈️🔒",
     hashtags: ["#ad", "#CloudVPN", "#OnlinePrivacy", "#CyberSecurity"],
-    cpm_rate: 7.0, bio_bonus_cpm_rate: 7.35,
+    cpm_rate: 0.70, bio_bonus_cpm_rate: 0.74,
     start_date: "2026-03-01", end_date: "2026-03-31", status: "active",
     category: "Tech", auto_post: true, keep_days: 30,
     spots_total: 30, spots_filled: 30,
     user_status: "auto_posted", posted_date: "2026-03-05",
-    views: 89400, earned: 625.80,
+    views: 89400, earned: 62.58,
   },
 ];
 
@@ -322,13 +376,13 @@ export const calendarEvents: CalendarEvent[] = [
 export const earnings: Earning[] = [
   {
     id: "e1", campaign_id: "c4", brand_name: "CloudVPN", platform: "instagram",
-    views: 89400, cpm_rate: 7.0, amount: 625.80,
+    views: 89400, cpm_rate: 0.70, amount: 62.58,
     bio_bonus_applied: false, period_start: "2026-03-01", period_end: "2026-03-31",
     payout_status: "processing",
   },
   {
     id: "e2", campaign_id: "c1", brand_name: "GlowSkin", platform: "instagram",
-    views: 34200, cpm_rate: 5.0, amount: 171.00,
+    views: 34200, cpm_rate: 0.65, amount: 22.23,
     bio_bonus_applied: false, period_start: "2026-03-15", period_end: "2026-03-31",
     payout_status: "pending",
   },
@@ -337,10 +391,123 @@ export const earnings: Earning[] = [
 // ── Dashboard stats ──────────────────────────────────────────
 
 export const dashboardStats: DashboardStats = {
-  total_earnings: 796.80,
-  pending_earnings: 171.00,
+  total_earnings: 84.81,
+  pending_earnings: 22.23,
   total_views: 123600,
   active_campaigns: 2,
-  avg_cpm: 5.75,
+  avg_cpm: 0.65,
   bio_bonus_active: false,
 };
+
+// ── Brand-side demo data ─────────────────────────────────────
+
+export const demoBrandAccount: BrandAccount = {
+  id: "b1",
+  brand_name: "CloudVPN",
+  brand_initials: "CV",
+  brand_color: "#607D8B",
+  category: "tech",
+  contact_name: "Sarah Chen",
+  work_email: "sarah@cloudvpn.io",
+  balance: 24_350.00,
+};
+
+export const demoBrandCampaigns: BrandCampaign[] = [
+  {
+    id: "bc1",
+    title: "Digital Security Awareness",
+    style: "brand_growth",
+    status: "active",
+    content_type: "video",
+    budget: 50000,
+    spent: 38_420.00,
+    total_views: 54_885_714,
+    total_unique_accounts: 847,
+    total_unique_posts: 1_234,
+    cpm_rate: 0.70,
+    start_date: "2026-03-01",
+    end_date: "2026-03-31",
+    demographics: {
+      age_groups: [
+        { label: "13-17", pct: 4 },
+        { label: "18-24", pct: 31 },
+        { label: "25-34", pct: 38 },
+        { label: "35-44", pct: 17 },
+        { label: "45-54", pct: 7 },
+        { label: "55+", pct: 3 },
+      ],
+      gender: [
+        { label: "Female", pct: 46 },
+        { label: "Male", pct: 51 },
+        { label: "Other", pct: 3 },
+      ],
+      top_countries: [
+        { code: "GB", name: "United Kingdom", pct: 38 },
+        { code: "US", name: "United States", pct: 28 },
+        { code: "CA", name: "Canada", pct: 9 },
+        { code: "AU", name: "Australia", pct: 7 },
+        { code: "DE", name: "Germany", pct: 5 },
+      ],
+      top_cities: [
+        { name: "London", pct: 14 },
+        { name: "New York", pct: 8 },
+        { name: "Manchester", pct: 5 },
+        { name: "Toronto", pct: 4 },
+        { name: "Sydney", pct: 3 },
+      ],
+    },
+  },
+  {
+    id: "bc2",
+    title: "VPN for Gamers",
+    style: "viral_content",
+    status: "completed",
+    content_type: "reel",
+    budget: 25000,
+    spent: 25000,
+    total_views: 41_666_667,
+    total_unique_accounts: 412,
+    total_unique_posts: 620,
+    cpm_rate: 0.60,
+    start_date: "2026-02-01",
+    end_date: "2026-02-28",
+    demographics: {
+      age_groups: [
+        { label: "13-17", pct: 12 },
+        { label: "18-24", pct: 44 },
+        { label: "25-34", pct: 28 },
+        { label: "35-44", pct: 10 },
+        { label: "45-54", pct: 4 },
+        { label: "55+", pct: 2 },
+      ],
+      gender: [
+        { label: "Female", pct: 28 },
+        { label: "Male", pct: 69 },
+        { label: "Other", pct: 3 },
+      ],
+      top_countries: [
+        { code: "US", name: "United States", pct: 42 },
+        { code: "GB", name: "United Kingdom", pct: 22 },
+        { code: "CA", name: "Canada", pct: 11 },
+        { code: "DE", name: "Germany", pct: 6 },
+        { code: "FR", name: "France", pct: 4 },
+      ],
+      top_cities: [
+        { name: "New York", pct: 10 },
+        { name: "Los Angeles", pct: 8 },
+        { name: "London", pct: 7 },
+        { name: "Toronto", pct: 4 },
+        { name: "Chicago", pct: 3 },
+      ],
+    },
+  },
+];
+
+/** Brand Growth CPM tiers based on budget size */
+export const brandGrowthTiers = [
+  { min_budget: 50000, max_budget: 99999, cpm: 0.60, label: "£50k – £99k" },
+  { min_budget: 100000, max_budget: 249999, cpm: 0.50, label: "£100k – £249k" },
+  { min_budget: 250000, max_budget: 499999, cpm: 0.40, label: "£250k – £499k" },
+  { min_budget: 500000, max_budget: 999999, cpm: 0.30, label: "£500k – £999k" },
+  { min_budget: 1000000, max_budget: Infinity, cpm: 0.20, label: "£1M+" },
+];
