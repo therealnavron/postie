@@ -18,6 +18,9 @@ import {
   Loader2,
   CheckCircle2,
   Calendar,
+  Film,
+  Brain,
+  ArrowRight,
 } from "lucide-react";
 
 const statusConfig: Record<string, { color: string; label: string }> = {
@@ -117,6 +120,38 @@ export default function BrandCampaignDetail() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Content + Sentiment quick links */}
+      <div className="grid sm:grid-cols-2 gap-3">
+        <Link href={`/brand/campaigns/${params?.id}/content`}>
+          <Card className="border border-border/60 hover:border-border transition-colors cursor-pointer" data-testid="link-content">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                <Film className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">Content</p>
+                <p className="text-[11px] text-muted-foreground">View all posted content, performance charts, and comments</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href={`/brand/campaigns/${params?.id}/sentiment`}>
+          <Card className="border border-border/60 hover:border-border transition-colors cursor-pointer" data-testid="link-sentiment">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
+                <Brain className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">Sentiment Tracker</p>
+                <p className="text-[11px] text-muted-foreground">AI analysis of audience sentiment across all posts</p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Budget bar + extend */}

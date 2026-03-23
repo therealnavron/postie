@@ -503,6 +503,216 @@ export const demoBrandCampaigns: BrandCampaign[] = [
   },
 ];
 
+// ── Brand content analytics types ────────────────────────────
+
+export type SentimentLabel = "positive" | "neutral" | "negative";
+
+export interface ContentComment {
+  id: string;
+  username: string;
+  text: string;
+  likes: number;
+  timestamp: string;
+  sentiment: SentimentLabel;
+  sentiment_score: number; // -1 to 1
+}
+
+export interface DailyMetric {
+  date: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+}
+
+export interface ContentPost {
+  id: string;
+  campaign_id: string;
+  creator_username: string;
+  creator_display_name: string;
+  platform: Platform;
+  post_type: PostType;
+  caption: string;
+  posted_date: string;
+  total_views: number;
+  total_likes: number;
+  total_comments: number;
+  total_shares: number;
+  engagement_rate: number;
+  daily_metrics: DailyMetric[];
+  comments: ContentComment[];
+  thumbnail_color: string; // placeholder color for demo
+}
+
+export interface SentimentSummary {
+  campaign_id: string;
+  overall_score: number; // -1 to 1
+  overall_label: SentimentLabel;
+  positive_pct: number;
+  neutral_pct: number;
+  negative_pct: number;
+  total_comments_analysed: number;
+  top_positive_keywords: string[];
+  top_negative_keywords: string[];
+  ai_summary: string;
+  daily_sentiment: { date: string; positive: number; neutral: number; negative: number; avg_score: number }[];
+}
+
+// ── Helper: generate daily metrics from a start date ─────────
+function generateDailyMetrics(startDate: string, days: number, baseViews: number): DailyMetric[] {
+  const metrics: DailyMetric[] = [];
+  const start = new Date(startDate);
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    // Views spike on day 1-3 then taper with organic growth
+    const dayFactor = i < 1 ? 0.3 : i < 3 ? 1.2 : i < 7 ? 0.8 : i < 14 ? 0.5 : 0.25;
+    const jitter = 0.7 + Math.random() * 0.6;
+    const views = Math.round(baseViews * dayFactor * jitter);
+    metrics.push({
+      date: d.toISOString().slice(0, 10),
+      views,
+      likes: Math.round(views * (0.04 + Math.random() * 0.03)),
+      comments: Math.round(views * (0.005 + Math.random() * 0.005)),
+      shares: Math.round(views * (0.008 + Math.random() * 0.006)),
+    });
+  }
+  return metrics;
+}
+
+// ── Demo content posts for campaign bc1 ──────────────────────
+export const demoBrandContentPosts: ContentPost[] = [
+  {
+    id: "cp1", campaign_id: "bc1", creator_username: "alex.creates", creator_display_name: "Alex Davis",
+    platform: "instagram", post_type: "reel",
+    caption: "I protect my data with @CloudVPN — especially when travelling ✈️🔒 #ad #CloudVPN",
+    posted_date: "2026-03-01", total_views: 892_400, total_likes: 34_210, total_comments: 1_847, total_shares: 5_120,
+    engagement_rate: 4.6, daily_metrics: generateDailyMetrics("2026-03-01", 23, 48000),
+    thumbnail_color: "#607D8B",
+    comments: [
+      { id: "cm1", username: "traveljane_", text: "Been using this for months, absolute game changer for public wifi!", likes: 234, timestamp: "2026-03-01T14:22:00Z", sentiment: "positive", sentiment_score: 0.92 },
+      { id: "cm2", username: "digitalnom4d", text: "Does it actually slow down your connection though? 🤔", likes: 89, timestamp: "2026-03-01T15:10:00Z", sentiment: "neutral", sentiment_score: 0.1 },
+      { id: "cm3", username: "cybersec_mike", text: "Good to see creators promoting online safety. CloudVPN is solid.", likes: 312, timestamp: "2026-03-01T16:44:00Z", sentiment: "positive", sentiment_score: 0.88 },
+      { id: "cm4", username: "skept1cal", text: "Another VPN ad... they're all the same honestly", likes: 45, timestamp: "2026-03-02T08:30:00Z", sentiment: "negative", sentiment_score: -0.65 },
+      { id: "cm5", username: "emma_adventures", text: "Just set this up before my Thailand trip, love it already ❤️", likes: 178, timestamp: "2026-03-02T10:15:00Z", sentiment: "positive", sentiment_score: 0.95 },
+      { id: "cm6", username: "tech_reviews_uk", text: "CloudVPN consistently ranks top 3 in independent tests. Great pick.", likes: 267, timestamp: "2026-03-02T12:05:00Z", sentiment: "positive", sentiment_score: 0.85 },
+      { id: "cm7", username: "privacy_matters", text: "I wish more people understood how important VPNs are. This is a good start.", likes: 156, timestamp: "2026-03-03T09:20:00Z", sentiment: "positive", sentiment_score: 0.72 },
+      { id: "cm8", username: "mark_fx", text: "The price is a bit steep compared to some alternatives", likes: 34, timestamp: "2026-03-03T14:00:00Z", sentiment: "negative", sentiment_score: -0.45 },
+    ],
+  },
+  {
+    id: "cp2", campaign_id: "bc1", creator_username: "techsavvy.jo", creator_display_name: "Jo Thompson",
+    platform: "instagram", post_type: "video",
+    caption: "POV: You just connected to airport wifi without a VPN 😬🔓 vs with @CloudVPN 🔒✨ #CyberSecurity #ad",
+    posted_date: "2026-03-03", total_views: 1_456_000, total_likes: 67_340, total_comments: 3_210, total_shares: 12_450,
+    engagement_rate: 5.7, daily_metrics: generateDailyMetrics("2026-03-03", 21, 82000),
+    thumbnail_color: "#455A64",
+    comments: [
+      { id: "cm9", username: "sarah_codes", text: "Lol the airport wifi skit had me dead 😂 but seriously, everyone needs this", likes: 567, timestamp: "2026-03-03T11:00:00Z", sentiment: "positive", sentiment_score: 0.88 },
+      { id: "cm10", username: "no_ads_pls", text: "Skip ad", likes: 12, timestamp: "2026-03-03T11:30:00Z", sentiment: "negative", sentiment_score: -0.7 },
+      { id: "cm11", username: "backpacker_dan", text: "Bro this literally saved me in Bali, the free wifi there is SKETCHY", likes: 890, timestamp: "2026-03-03T13:20:00Z", sentiment: "positive", sentiment_score: 0.91 },
+      { id: "cm12", username: "lisa.london", text: "Love the edit quality on this! Also yes, VPNs are essential", likes: 234, timestamp: "2026-03-04T09:10:00Z", sentiment: "positive", sentiment_score: 0.82 },
+      { id: "cm13", username: "budget_tech", text: "Is there a free version? Monthly subscriptions add up", likes: 78, timestamp: "2026-03-04T14:55:00Z", sentiment: "neutral", sentiment_score: -0.15 },
+      { id: "cm14", username: "vpn_expert", text: "CloudVPN's no-log policy is verified by independent auditors. Top tier.", likes: 445, timestamp: "2026-03-05T08:30:00Z", sentiment: "positive", sentiment_score: 0.93 },
+    ],
+  },
+  {
+    id: "cp3", campaign_id: "bc1", creator_username: "lifewithlaura", creator_display_name: "Laura Chen",
+    platform: "tiktok", post_type: "video",
+    caption: "Things I never travel without: passport, charger, @CloudVPN 🧳🔐 #traveltok #ad",
+    posted_date: "2026-03-05", total_views: 2_340_000, total_likes: 112_000, total_comments: 5_670, total_shares: 18_900,
+    engagement_rate: 5.8, daily_metrics: generateDailyMetrics("2026-03-05", 19, 145000),
+    thumbnail_color: "#78909C",
+    comments: [
+      { id: "cm15", username: "nomad_nina", text: "THIS. Every time I see someone banking on hotel wifi I cringe", likes: 1230, timestamp: "2026-03-05T10:00:00Z", sentiment: "positive", sentiment_score: 0.78 },
+      { id: "cm16", username: "cheapflyer", text: "do I actually need a VPN though? genuine question", likes: 56, timestamp: "2026-03-05T11:20:00Z", sentiment: "neutral", sentiment_score: 0.05 },
+      { id: "cm17", username: "securitynerdd", text: "Yes you do. Your data is worth more than you think.", likes: 678, timestamp: "2026-03-05T11:45:00Z", sentiment: "positive", sentiment_score: 0.7 },
+      { id: "cm18", username: "hater_2026", text: "Paid promotion detected 🙄", likes: 23, timestamp: "2026-03-06T09:00:00Z", sentiment: "negative", sentiment_score: -0.8 },
+      { id: "cm19", username: "devraj_k", text: "CloudVPN is genuinely one of the fastest I've used. No complaints.", likes: 445, timestamp: "2026-03-06T14:30:00Z", sentiment: "positive", sentiment_score: 0.9 },
+    ],
+  },
+  {
+    id: "cp4", campaign_id: "bc1", creator_username: "gadgetguru", creator_display_name: "Marcus Hill",
+    platform: "instagram", post_type: "reel",
+    caption: "3 reasons I switched to @CloudVPN (and stayed) 🔐 #techreview #ad #onlinesafety",
+    posted_date: "2026-03-08", total_views: 678_900, total_likes: 28_900, total_comments: 1_560, total_shares: 4_230,
+    engagement_rate: 5.1, daily_metrics: generateDailyMetrics("2026-03-08", 16, 52000),
+    thumbnail_color: "#546E7A",
+    comments: [
+      { id: "cm20", username: "paultech", text: "Solid review. The kill switch feature is underrated.", likes: 345, timestamp: "2026-03-08T12:00:00Z", sentiment: "positive", sentiment_score: 0.85 },
+      { id: "cm21", username: "jenny_streams", text: "Been using it to unblock content when I'm abroad. Works perfectly.", likes: 210, timestamp: "2026-03-08T15:30:00Z", sentiment: "positive", sentiment_score: 0.87 },
+      { id: "cm22", username: "grumpyoldman", text: "VPNs are a waste of money if you have nothing to hide", likes: 15, timestamp: "2026-03-09T08:45:00Z", sentiment: "negative", sentiment_score: -0.72 },
+      { id: "cm23", username: "infosec_daily", text: "That's not how privacy works. Everyone has something worth protecting.", likes: 890, timestamp: "2026-03-09T09:10:00Z", sentiment: "positive", sentiment_score: 0.68 },
+    ],
+  },
+  {
+    id: "cp5", campaign_id: "bc1", creator_username: "simplysophie", creator_display_name: "Sophie Williams",
+    platform: "instagram", post_type: "slideshow",
+    caption: "My digital safety essentials for working remotely 💻🔒 Swipe to see why @CloudVPN is a must-have #remotework #ad",
+    posted_date: "2026-03-10", total_views: 445_200, total_likes: 19_800, total_comments: 980, total_shares: 2_870,
+    engagement_rate: 5.3, daily_metrics: generateDailyMetrics("2026-03-10", 14, 38000),
+    thumbnail_color: "#37474F",
+    comments: [
+      { id: "cm24", username: "remoteworker_amy", text: "As a remote worker I can confirm — VPN is non-negotiable at coffee shops", likes: 234, timestamp: "2026-03-10T13:00:00Z", sentiment: "positive", sentiment_score: 0.88 },
+      { id: "cm25", username: "coffeeshop_coder", text: "Great carousel design! Also CloudVPN is genuinely good.", likes: 123, timestamp: "2026-03-10T14:20:00Z", sentiment: "positive", sentiment_score: 0.8 },
+      { id: "cm26", username: "skeptic123", text: "How much did they pay you for this", likes: 8, timestamp: "2026-03-11T10:00:00Z", sentiment: "negative", sentiment_score: -0.55 },
+    ],
+  },
+  {
+    id: "cp6", campaign_id: "bc1", creator_username: "fitandfocused", creator_display_name: "Priya Patel",
+    platform: "tiktok", post_type: "video",
+    caption: "Streaming my workouts abroad without buffering? @CloudVPN makes it happen 💪🌍 #fitnesstok #ad",
+    posted_date: "2026-03-12", total_views: 3_120_000, total_likes: 145_000, total_comments: 7_890, total_shares: 22_100,
+    engagement_rate: 5.6, daily_metrics: generateDailyMetrics("2026-03-12", 12, 310000),
+    thumbnail_color: "#263238",
+    comments: [
+      { id: "cm27", username: "gymrat_2026", text: "Wait you can use this to access your home streaming while travelling?? Game changer", likes: 2340, timestamp: "2026-03-12T09:00:00Z", sentiment: "positive", sentiment_score: 0.94 },
+      { id: "cm28", username: "fitnessqueen", text: "Love this tip! I always lose access to my workout apps abroad", likes: 890, timestamp: "2026-03-12T10:30:00Z", sentiment: "positive", sentiment_score: 0.86 },
+      { id: "cm29", username: "trollface99", text: "Nobody asked", likes: 5, timestamp: "2026-03-12T11:00:00Z", sentiment: "negative", sentiment_score: -0.9 },
+      { id: "cm30", username: "honest_reviewer", text: "I've tried 5 VPNs and CloudVPN genuinely has the least speed drop. Respect for recommending a good one.", likes: 1560, timestamp: "2026-03-13T08:00:00Z", sentiment: "positive", sentiment_score: 0.95 },
+    ],
+  },
+];
+
+// ── Sentiment summary for campaign bc1 ───────────────────────
+export const demoBrandSentiment: SentimentSummary = {
+  campaign_id: "bc1",
+  overall_score: 0.72,
+  overall_label: "positive",
+  positive_pct: 68,
+  neutral_pct: 18,
+  negative_pct: 14,
+  total_comments_analysed: 21_157,
+  top_positive_keywords: ["game changer", "essential", "fast", "love it", "solid", "safe", "trust", "best VPN", "easy to use", "recommend"],
+  top_negative_keywords: ["expensive", "paid ad", "slow", "subscription", "unnecessary", "waste"],
+  ai_summary: `Overall audience sentiment for the Digital Security Awareness campaign is strongly positive (72% score). The majority of comments reflect genuine appreciation for the product, with many users sharing personal experiences using CloudVPN while travelling or working remotely.\n\nKey positive themes include: perceived speed advantage over competitors, practical use cases (airport wifi, coffee shops, streaming abroad), and trust in CloudVPN's independent security audits.\n\nNegative sentiment (14%) is primarily driven by: scepticism towards paid promotions in general, price concerns compared to free alternatives, and a small minority dismissing VPN necessity altogether.\n\nNeutral comments (18%) tend to be genuine questions about features, pricing, or whether a VPN is needed — presenting an opportunity for educational follow-up content.\n\nRecommendation: Lean into the "real traveller" use case in future content. The airport/coffee shop wifi angle resonates most strongly. Consider addressing the price objection with a comparison or value breakdown.`,
+  daily_sentiment: [
+    { date: "2026-03-01", positive: 72, neutral: 18, negative: 10, avg_score: 0.76 },
+    { date: "2026-03-02", positive: 65, neutral: 22, negative: 13, avg_score: 0.68 },
+    { date: "2026-03-03", positive: 70, neutral: 17, negative: 13, avg_score: 0.72 },
+    { date: "2026-03-04", positive: 68, neutral: 19, negative: 13, avg_score: 0.70 },
+    { date: "2026-03-05", positive: 74, neutral: 15, negative: 11, avg_score: 0.78 },
+    { date: "2026-03-06", positive: 66, neutral: 20, negative: 14, avg_score: 0.66 },
+    { date: "2026-03-07", positive: 71, neutral: 16, negative: 13, avg_score: 0.73 },
+    { date: "2026-03-08", positive: 69, neutral: 18, negative: 13, avg_score: 0.71 },
+    { date: "2026-03-09", positive: 63, neutral: 21, negative: 16, avg_score: 0.62 },
+    { date: "2026-03-10", positive: 72, neutral: 17, negative: 11, avg_score: 0.75 },
+    { date: "2026-03-11", positive: 67, neutral: 19, negative: 14, avg_score: 0.68 },
+    { date: "2026-03-12", positive: 75, neutral: 14, negative: 11, avg_score: 0.79 },
+    { date: "2026-03-13", positive: 70, neutral: 18, negative: 12, avg_score: 0.73 },
+    { date: "2026-03-14", positive: 68, neutral: 20, negative: 12, avg_score: 0.71 },
+    { date: "2026-03-15", positive: 66, neutral: 21, negative: 13, avg_score: 0.68 },
+    { date: "2026-03-16", positive: 71, neutral: 17, negative: 12, avg_score: 0.74 },
+    { date: "2026-03-17", positive: 69, neutral: 18, negative: 13, avg_score: 0.70 },
+    { date: "2026-03-18", positive: 73, neutral: 15, negative: 12, avg_score: 0.76 },
+    { date: "2026-03-19", positive: 67, neutral: 20, negative: 13, avg_score: 0.69 },
+    { date: "2026-03-20", positive: 70, neutral: 18, negative: 12, avg_score: 0.72 },
+    { date: "2026-03-21", positive: 72, neutral: 16, negative: 12, avg_score: 0.74 },
+    { date: "2026-03-22", positive: 68, neutral: 19, negative: 13, avg_score: 0.70 },
+    { date: "2026-03-23", positive: 71, neutral: 17, negative: 12, avg_score: 0.73 },
+  ],
+};
+
 /** Brand Growth CPM tiers based on budget size */
 export const brandGrowthTiers = [
   { min_budget: 50000, max_budget: 99999, cpm: 0.60, label: "£50k – £99k" },

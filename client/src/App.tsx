@@ -23,6 +23,9 @@ import { BrandLogin, BrandSignup } from "@/pages/brand-auth";
 import BrandDashboard from "@/pages/brand-dashboard";
 import BrandCampaignDetail from "@/pages/brand-campaign-detail";
 import BrandCampaignBuilder from "@/pages/brand-campaign-builder";
+import BrandContent from "@/pages/brand-content";
+import BrandContentDetail from "@/pages/brand-content-detail";
+import BrandSentiment from "@/pages/brand-sentiment";
 
 // Layouts
 import DashboardLayout from "@/components/DashboardLayout";
@@ -78,6 +81,15 @@ function AppRouter() {
       </Route>
       <Route path="/brand/campaigns/new">
         <BrandRoute component={BrandCampaignBuilder} />
+      </Route>
+      <Route path="/brand/campaigns/:id/content">
+        <BrandRoute component={BrandContent} />
+      </Route>
+      <Route path="/brand/campaigns/:id/sentiment">
+        <BrandRoute component={BrandSentiment} />
+      </Route>
+      <Route path="/brand/content/:id">
+        <BrandRoute component={BrandContentDetail} />
       </Route>
       <Route path="/brand/campaigns/:id">
         <BrandRoute component={BrandCampaignDetail} />
