@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { SiInstagram, SiTiktok, SiX as SiXIcon } from "react-icons/si";
 
-const platformIcons = { instagram: SiInstagram, tiktok: SiTiktok, twitter: SiXIcon };
+const platformIcons: Record<string, typeof SiInstagram> = { instagram: SiInstagram, tiktok: SiTiktok, twitter: SiXIcon };
 
 const mainNav = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -109,7 +109,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </p>
           </div>
           {activeCampaigns.map((c) => {
-            const PIcon = platformIcons[c.platform];
+            const PIcon = platformIcons[c.posting_to.platform];
             return (
               <div
                 key={c.id}
@@ -127,8 +127,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <p className="text-xs font-medium truncate">{c.brand_name}</p>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                       <PIcon className="h-2.5 w-2.5" />
-                      <span>{c.content_type}</span>
-                      {c.user_status === "posted" && c.views && (
+                      <span>{c.post_type}</span>
+                      {(c.user_status === "posted" || c.user_status === "auto_posted") && c.views && (
                         <>
                           <span>·</span>
                           <Eye className="h-2.5 w-2.5" />
@@ -241,7 +241,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 Active Campaigns
               </p>
               {activeCampaigns.map((c) => {
-                const PIcon = platformIcons[c.platform];
+                const PIcon = platformIcons[c.posting_to.platform];
                 return (
                   <div key={c.id} className="px-4 py-2 flex items-center gap-2">
                     <div
@@ -254,9 +254,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <p className="text-xs font-medium truncate">{c.brand_name}</p>
                       <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                         <PIcon className="h-2.5 w-2.5" />
-                        <span>{c.content_type}</span>
+                        <span>{c.post_type}</span>
                         <span>·</span>
-                        <span className="capitalize">{c.user_status}</span>
+                        <span className="capitalize">{c.user_status === "auto_posted" ? "Posted" : c.user_status}</span>
                       </div>
                     </div>
                   </div>

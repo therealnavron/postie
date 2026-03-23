@@ -1,21 +1,28 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppState } from "@/lib/app-state";
 import { availableCampaigns, activeCampaigns } from "@/lib/mock-data";
-import type { Campaign, Platform } from "@/lib/mock-data";
+import type { Campaign, ActiveCampaign, Platform, PostType, MediaType } from "@/lib/mock-data";
 import {
   Copy,
   Calendar as CalIcon,
   CheckCircle2,
-  Users,
   ArrowRight,
   Loader2,
   Eye,
   DollarSign,
   Clock,
+  Image as ImageIcon,
+  Film,
+  Layers,
+  Hash,
+  Shield,
+  Zap,
+  Timer,
+  MapPin,
 } from "lucide-react";
 import { SiInstagram, SiTiktok, SiX } from "react-icons/si";
 
@@ -28,10 +35,28 @@ const statusConfig: Record<string, { color: string; label: string }> = {
   completed: { color: "bg-muted text-muted-foreground border-border", label: "Completed" },
 };
 
+const mediaIcons: Record<MediaType, typeof ImageIcon> = {
+  image: ImageIcon,
+  video: Film,
+  slideshow: Layers,
+};
+
+const postTypeLabels: Record<PostType, string> = {
+  story: "Story",
+  highlight: "Highlight",
+  profile_picture: "Profile Picture",
+  video: "Video",
+  slideshow: "Slideshow",
+  single_image: "Single Image",
+  reel: "Reel",
+  thread: "Thread",
+};
+
 function CampaignCard({ campaign, isJoined, onJoin }: { campaign: Campaign; isJoined: boolean; onJoin?: () => void }) {
   const [joining, setJoining] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
-  const PlatformIcon = platformIcons[campaign.platform];
+  const PlatformIcon = platformIcons[campaign.posting_to.platform];
+  const MediaIcon = mediaIcons[campaign.media.type];
   const status = statusConfig[campaign.status] || statusConfig.open;
   const spotsLeft = campaign.spots_total - campaign.spots_filled;
 
@@ -40,8 +65,10 @@ function CampaignCard({ campaign, isJoined, onJoin }: { campaign: Campaign; isJo
     setTimeout(() => { setJoining(false); onJoin?.(); }, 800);
   };
 
+  const fullCaption = campaign.caption + " " + campaign.hashtags.join(" ");
+
   const copyCaption = () => {
-    navigator.clipboard.writeText(campaign.caption).catch(() => {});
+    navigator.clipboard.writeText(fullCaption).catch(() => {});
     setCopiedId(true);
     setTimeout(() => setCopiedId(false), 2000);
   };
@@ -54,6 +81,7 @@ function CampaignCard({ campaign, isJoined, onJoin }: { campaign: Campaign; isJo
             {campaign.brand_logo_initials}
           </div>
           <div className="flex-1 min-w-0">
+            {/* Title + status + match */}
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <h3 className="text-sm font-semibold">{campaign.title}</h3>
               <Badge variant="outline" className={`text-[10px] ${status.color}`}>{status.label}</Badge>
@@ -63,15 +91,51 @@ function CampaignCard({ campaign, isJoined, onJoin }: { campaign: Campaign; isJo
                 </Badge>
               )}
             </div>
+
+            {/* Brand + category */}
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-2">
               <span className="font-medium text-foreground">{campaign.brand_name}</span>
               <span>·</span>
-              <PlatformIcon className="h-2.5 w-2.5" />
-              <span>{campaign.content_type}</span>
-              <span>·</span>
               <span>{campaign.category}</span>
             </div>
+
             <p className="text-xs text-muted-foreground leading-relaxed mb-3">{campaign.description}</p>
+
+            {/* What's being posted — media + placement info */}
+            <div className="bg-muted/40 rounded-lg p-3 mb-3 space-y-2.5">
+              {/* Post details row */}
+              <div className="flex items-start gap-2">
+                <MediaIcon className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium">{campaign.media.description}</p>
+                  {campaign.media.count && campaign.media.count > 1 && (
+                    <p className="text-[10px] text-muted-foreground">{campaign.media.count} {campaign.media.type === "slideshow" ? "slides" : "items"}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Posting to */}
+              <div className="flex items-center gap-2">
+                <PlatformIcon className="h-3 w-3 text-muted-foreground shrink-0" />
+                <span className="text-[10px] text-muted-foreground">
+                  Posting to <span className="font-medium text-foreground">{campaign.posting_to.placement}</span> on <span className="capitalize font-medium text-foreground">{campaign.posting_to.platform === "twitter" ? "X" : campaign.posting_to.platform}</span>
+                </span>
+              </div>
+
+              {/* Auto-post + keep duration */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {campaign.auto_post && (
+                  <div className="flex items-center gap-1">
+                    <Zap className="h-3 w-3 text-amber-500" />
+                    <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">Auto-posted for you</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1">
+                  <Timer className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">Keep up for <span className="font-medium text-foreground">{campaign.keep_days} day{campaign.keep_days !== 1 ? "s" : ""}</span></span>
+                </div>
+              </div>
+            </div>
 
             {/* Caption */}
             <div className="bg-muted/50 rounded-md p-3 mb-3">
@@ -83,14 +147,19 @@ function CampaignCard({ campaign, isJoined, onJoin }: { campaign: Campaign; isJo
                 </Button>
               </div>
               <p className="text-xs leading-relaxed">{campaign.caption}</p>
+              {/* Hashtags */}
+              <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                {campaign.hashtags.map((tag) => (
+                  <span key={tag} className="text-[10px] text-primary font-medium">{tag}</span>
+                ))}
+              </div>
             </div>
 
-            {/* Details */}
+            {/* Details row */}
             <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground mb-3">
               <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />£{campaign.cpm_rate.toFixed(2)} CPM</span>
-              <span className="text-primary">Bio: £{campaign.bio_bonus_cpm_rate.toFixed(2)}</span>
+              <span className="text-primary font-medium">Bio: £{campaign.bio_bonus_cpm_rate.toFixed(2)}</span>
               <span className="flex items-center gap-1"><CalIcon className="h-3 w-3" />{new Date(campaign.start_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – {new Date(campaign.end_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-              <span className="flex items-center gap-1"><Users className="h-3 w-3" />{campaign.min_followers.toLocaleString()}+ followers</span>
             </div>
 
             {/* Spots + action */}
@@ -120,6 +189,108 @@ function CampaignCard({ campaign, isJoined, onJoin }: { campaign: Campaign; isJo
   );
 }
 
+function ActiveCampaignCard({ campaign }: { campaign: ActiveCampaign }) {
+  const PlatformIcon = platformIcons[campaign.posting_to.platform];
+  const isAutoPosted = campaign.user_status === "auto_posted";
+
+  // Calculate keep-until date if posted
+  let keepUntil: Date | null = null;
+  let daysRemaining: number | null = null;
+  if (campaign.posted_date && campaign.keep_days) {
+    keepUntil = new Date(campaign.posted_date);
+    keepUntil.setDate(keepUntil.getDate() + campaign.keep_days);
+    const now = new Date();
+    daysRemaining = Math.max(0, Math.ceil((keepUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+  }
+
+  return (
+    <Card className="border border-border/60" data-testid={`active-${campaign.id}`}>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0 text-white text-xs font-bold" style={{ backgroundColor: campaign.brand_color }}>
+            {campaign.brand_logo_initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <h3 className="text-sm font-semibold">{campaign.title}</h3>
+              <Badge variant="outline" className={`text-[10px] ${
+                isAutoPosted
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                  : campaign.user_status === "posted"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                    : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+              }`}>
+                {isAutoPosted ? "auto-posted" : campaign.user_status}
+              </Badge>
+            </div>
+
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-2">
+              <span>{campaign.brand_name}</span>
+              <span>·</span>
+              <PlatformIcon className="h-2.5 w-2.5" />
+              <span>{postTypeLabels[campaign.post_type]}</span>
+              <span>·</span>
+              <span>{campaign.posting_to.placement}</span>
+              <span>·</span>
+              <span>£{campaign.cpm_rate.toFixed(2)} CPM</span>
+            </div>
+
+            {/* Auto-post notice */}
+            {campaign.auto_post && (
+              <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 mb-2">
+                <Zap className="h-3 w-3" />
+                <span className="font-medium">Auto-posted to your account</span>
+              </div>
+            )}
+
+            {/* Views + earnings for posted campaigns */}
+            {campaign.views !== undefined && campaign.earned !== undefined && (
+              <div className="flex items-center gap-4 text-xs mb-2">
+                <span className="flex items-center gap-1"><Eye className="h-3 w-3 text-muted-foreground" />{campaign.views.toLocaleString()} views</span>
+                <span className="flex items-center gap-1 font-semibold"><DollarSign className="h-3 w-3 text-emerald-600" />£{campaign.earned.toFixed(2)}</span>
+              </div>
+            )}
+
+            {/* Keep duration countdown */}
+            {daysRemaining !== null && daysRemaining > 0 && (
+              <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50 text-xs">
+                <Timer className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px]">Keep post up for {campaign.keep_days} days</span>
+                    <span className="text-[10px] font-medium">{daysRemaining} day{daysRemaining !== 1 ? "s" : ""} left</span>
+                  </div>
+                  <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary/60 rounded-full transition-all"
+                      style={{ width: `${((campaign.keep_days - daysRemaining) / campaign.keep_days) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {daysRemaining === 0 && campaign.posted_date && (
+              <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="h-3 w-3" />
+                <span className="font-medium">Keep period complete — you can remove the post</span>
+              </div>
+            )}
+
+            {/* Scheduled date for upcoming */}
+            {campaign.scheduled_date && campaign.user_status === "scheduled" && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                <Clock className="h-3 w-3" />
+                Auto-posting on {new Date(campaign.scheduled_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Campaigns() {
   const { joinedCampaigns, joinCampaign } = useAppState();
 
@@ -133,7 +304,7 @@ export default function Campaigns() {
     <div className="p-4 sm:p-6 space-y-5 max-w-[1100px]" data-testid="campaigns-page">
       <div>
         <h1 className="text-xl font-semibold">Campaigns</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Discover campaigns and sign up to ones that fit your audience.</p>
+        <p className="text-sm text-muted-foreground mt-0.5">Discover campaigns — we auto-post on your behalf, you earn per view.</p>
       </div>
 
       <Tabs defaultValue="discover" className="space-y-4">
@@ -164,36 +335,7 @@ export default function Campaigns() {
         <TabsContent value="active" className="space-y-3">
           {/* Active campaigns from activeCampaigns mock */}
           {activeCampaigns.map((c) => (
-            <Card key={c.id} className="border border-border/60" data-testid={`active-${c.id}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0 text-white text-xs font-bold" style={{ backgroundColor: c.brand_color }}>
-                    {c.brand_logo_initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h3 className="text-sm font-semibold">{c.title}</h3>
-                      <Badge variant="outline" className={`text-[10px] ${c.user_status === "posted" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"}`}>
-                        {c.user_status}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2">{c.brand_name} · {c.content_type} · £{c.cpm_rate.toFixed(2)} CPM</p>
-                    {c.views && c.earned && (
-                      <div className="flex items-center gap-4 text-xs">
-                        <span className="flex items-center gap-1"><Eye className="h-3 w-3 text-muted-foreground" />{c.views.toLocaleString()} views</span>
-                        <span className="flex items-center gap-1 font-semibold"><DollarSign className="h-3 w-3 text-emerald-600" />£{c.earned.toFixed(2)}</span>
-                      </div>
-                    )}
-                    {c.scheduled_date && c.user_status === "scheduled" && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                        <Clock className="h-3 w-3" />
-                        Post by {new Date(c.scheduled_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ActiveCampaignCard key={c.id} campaign={c} />
           ))}
 
           {/* Joined campaigns from discover */}

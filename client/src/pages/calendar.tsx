@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { calendarEvents } from "@/lib/mock-data";
-import type { Platform } from "@/lib/mock-data";
-import { ChevronLeft, ChevronRight, Image, Video, Film, LayoutGrid, MessageSquare, Clock } from "lucide-react";
+import type { Platform, PostType } from "@/lib/mock-data";
+import { ChevronLeft, ChevronRight, Image, Video, Film, LayoutGrid, MessageSquare, Clock, Zap, Layers, Camera, Star } from "lucide-react";
 import { SiInstagram, SiTiktok, SiX } from "react-icons/si";
 
 const platformIcons: Record<Platform, typeof SiInstagram> = {
@@ -13,13 +13,15 @@ const platformIcons: Record<Platform, typeof SiInstagram> = {
   twitter: SiX,
 };
 
-const contentTypeIcons: Record<string, typeof Image> = {
-  image: Image,
+const postTypeIcons: Record<PostType, typeof Image> = {
+  single_image: Image,
   video: Video,
   reel: Film,
-  carousel: LayoutGrid,
+  slideshow: Layers,
   thread: MessageSquare,
   story: Film,
+  highlight: Star,
+  profile_picture: Camera,
 };
 
 const statusColors: Record<string, string> = {
@@ -167,7 +169,7 @@ export default function CalendarPage() {
           {calendarEvents
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
             .map((evt) => {
-              const Icon = contentTypeIcons[evt.content_type] || Image;
+              const Icon = postTypeIcons[evt.post_type] || Image;
               const PIcon = platformIcons[evt.platform];
               const isToday = evt.status === "due_today";
               return (

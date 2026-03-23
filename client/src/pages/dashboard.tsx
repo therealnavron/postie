@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Link } from "wouter";
 import { useAppState } from "@/lib/app-state";
 import {
@@ -10,6 +9,7 @@ import {
   calendarEvents,
   dashboardStats,
 } from "@/lib/mock-data";
+import type { PostType } from "@/lib/mock-data";
 import {
   DollarSign,
   Eye,
@@ -18,10 +18,13 @@ import {
   ArrowRight,
   Calendar,
   MapPin,
-  Users,
   Sparkles,
   Clock,
-  CheckCircle2,
+  Zap,
+  Timer,
+  Film,
+  Image as ImageIcon,
+  Layers,
 } from "lucide-react";
 import { SiInstagram, SiTiktok, SiX } from "react-icons/si";
 
@@ -30,6 +33,17 @@ const statusColors: Record<string, string> = {
   scheduled: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
   due_today: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   posted: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+};
+
+const postTypeLabels: Record<PostType, string> = {
+  story: "Story",
+  highlight: "Highlight",
+  profile_picture: "Profile Pic",
+  video: "Video",
+  slideshow: "Slideshow",
+  single_image: "Image",
+  reel: "Reel",
+  thread: "Thread",
 };
 
 export default function DashboardOverview() {
@@ -147,7 +161,7 @@ export default function DashboardOverview() {
           </CardHeader>
           <CardContent className="pt-1 space-y-2">
             {matched.map((c) => {
-              const PlatformIcon = platformIcons[c.platform];
+              const PlatformIcon = platformIcons[c.posting_to.platform];
               return (
                 <div key={c.id} className="p-3 rounded-lg border border-border/40 hover:border-border/80 transition-colors" data-testid={`matched-${c.id}`}>
                   <div className="flex items-start gap-3">
@@ -161,19 +175,29 @@ export default function DashboardOverview() {
                           {c.match_score}% match
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-1">
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-1.5">
                         <span>{c.brand_name}</span>
                         <span>·</span>
                         <PlatformIcon className="h-2.5 w-2.5" />
-                        <span>{c.content_type}</span>
+                        <span>{postTypeLabels[c.post_type]}</span>
                         <span>·</span>
                         <span>£{c.cpm_rate.toFixed(2)} CPM</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-primary/60 rounded-full" style={{ width: `${(c.spots_filled / c.spots_total) * 100}%` }} />
-                        </div>
-                        <span className="text-[10px] text-muted-foreground">{c.spots_total - c.spots_filled} spots left</span>
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Zap className="h-2.5 w-2.5 text-amber-500" />
+                          Auto-posted
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Timer className="h-2.5 w-2.5" />
+                          {c.keep_days}d keep
+                        </span>
+                        <span className="flex items-center gap-1 ml-auto">
+                          <span className="w-12 h-1 bg-muted rounded-full overflow-hidden inline-block">
+                            <span className="block h-full bg-primary/60 rounded-full" style={{ width: `${(c.spots_filled / c.spots_total) * 100}%` }} />
+                          </span>
+                          {c.spots_total - c.spots_filled} spots
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -229,6 +253,11 @@ export default function DashboardOverview() {
                         <span>{evt.time}</span>
                       </>
                     )}
+                  </div>
+                  <div className="flex items-center gap-1 mt-1 text-[9px] text-muted-foreground">
+                    {evt.auto_post && <Zap className="h-2 w-2 text-amber-500" />}
+                    <span>{postTypeLabels[evt.post_type]}</span>
+                    {evt.auto_post && <span>· auto</span>}
                   </div>
                 </div>
               );
